@@ -15,17 +15,17 @@ async def get_or_init_db():
         return _db
     
     try:
-        # Try connecting to live MongoDB (local or Atlas)
-        real_client = AsyncIOMotorClient(settings.MONGODB_URL, serverSelectionTimeoutMS=1500)
+        mongo_url = settings.get_mongo_url
+        real_client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=4000)
         await real_client.admin.command("ping")
         _client = real_client
         _db = _client[settings.MONGODB_DB_NAME]
         is_mock = False
-        logger.info("Connected to LIVE MongoDB at %s (Database: %s)", settings.MONGODB_URL, settings.MONGODB_DB_NAME)
+        logger.info("Connected to LIVE MongoDB at %s (Database: %s)", mongo_url, settings.MONGODB_DB_NAME)
     except Exception as e:
         logger.warning(
             "Live MongoDB not reachable at %s (%s). Using Async MongoMock so login & dashboard work seamlessly.",
-            settings.MONGODB_URL, e
+            settings.get_mongo_url, e
         )
         from mongomock_motor import AsyncMongoMockClient
         _client = AsyncMongoMockClient()

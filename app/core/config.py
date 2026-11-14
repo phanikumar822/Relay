@@ -6,7 +6,14 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
     DATABASE_URL: str = "mysql+aiomysql://root:phani#123@localhost:3306/event_agent_db"
     MONGODB_URL: str = "mongodb://localhost:27017"
+    MONGODB_URI: str = ""
     MONGODB_DB_NAME: str = "event_agent_db"
+
+    @property
+    def get_mongo_url(self) -> str:
+        if self.MONGODB_URI and self.MONGODB_URI.strip():
+            return self.MONGODB_URI.strip()
+        return self.MONGODB_URL
     GEMINI_API_KEY: str
     GEMINI_API_KEY_BACKUP: str = ""
     TAVILY_API_KEY: str
