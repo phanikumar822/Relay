@@ -96,9 +96,13 @@ async def run_immediate_pipeline(task_id: str, prompt: str, user_email: str):
 
         email_dispatched = False
         if fresh_events:
-            username = user_email.split("@")[0]
-            await send_event_digest(user_email, fresh_events, username=username)
-            email_dispatched = True
+            try:
+                username = user_email.split("@")[0]
+                await send_event_digest(user_email, fresh_events, username=username)
+                email_dispatched = True
+            except Exception as mail_err:
+                logger.warning("Task %s: Email dispatch skipped or timed out (%s). Events saved to UI.", task_id, mail_err)
+                email_dispatched = False
 
         await t_col.update_one(
             {"_id": task_id},
@@ -221,9 +225,13 @@ async def run_scheduled_pipeline(
         # Final multi-day dispatch
         email_dispatched = False
         if all_fresh_events:
-            username = user_email.split("@")[0]
-            await send_event_digest(user_email, all_fresh_events, username=username)
-            email_dispatched = True
+            try:
+                username = user_email.split("@")[0]
+                await send_event_digest(user_email, all_fresh_events, username=username)
+                email_dispatched = True
+            except Exception as mail_err:
+                logger.warning("Scheduled Task %s: Email dispatch skipped or timed out (%s). Events saved to UI.", task_id, mail_err)
+                email_dispatched = False
 
         await t_col.update_one(
             {"_id": task_id},

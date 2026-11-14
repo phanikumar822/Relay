@@ -46,11 +46,16 @@ async def send_event_digest(recipient_email: str, events: list, username: str = 
     message["Subject"] = f"Welcome {len(events)} New Events Found"
     message.set_content(html_content, subtype="html")
 
+    use_ssl = int(settings.SMTP_PORT) == 465
+    start_tls = int(settings.SMTP_PORT) == 587
+
     await aiosmtplib.send(
         message,
         hostname=settings.SMTP_HOST,
-        port=settings.SMTP_PORT,
-        start_tls=True,
+        port=int(settings.SMTP_PORT),
+        start_tls=start_tls,
+        use_tls=use_ssl,
         username=settings.SMTP_USER,
-        password=settings.SMTP_PASSWORD
+        password=settings.SMTP_PASSWORD,
+        timeout=12
     )
