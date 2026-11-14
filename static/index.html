@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Event Scout - Tech Event Discovery</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <!-- Top Navigation -->
+  <header class="navbar">
+    <div class="nav-brand">
+      <span>Event Scout</span>
+      <span class="nav-badge">v1.0 &bull; MongoDB</span>
+    </div>
+    <div id="navUserSection" class="nav-user hidden">
+      <span id="userEmailBadge" class="user-email"></span>
+      <button id="logoutBtn" class="btn btn-outline-danger btn-sm">Log Out</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- AUTH SECTION (Login & Signup) -->
+    <div id="authSection" class="auth-container">
+      <div class="card">
+        <div class="auth-tabs">
+          <button id="tabLogin" class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
+          <button id="tabSignup" class="auth-tab" onclick="switchAuthTab('signup')">Create Account</button>
+        </div>
+
+        <div id="authAlert" class="alert hidden"></div>
+
+        <form id="authForm" onsubmit="handleAuthSubmit(event)">
+          <div class="form-group">
+            <label class="form-label" for="authEmail">Email Address</label>
+            <input type="email" id="authEmail" class="form-control" placeholder="you@example.com" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="authPassword">Password</label>
+            <input type="password" id="authPassword" class="form-control" placeholder="••••••••" required />
+          </div>
+
+          <button type="submit" id="authSubmitBtn" class="btn btn-primary" style="width: 100%;">
+            Sign In
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- DASHBOARD SECTION (Shown when logged in) -->
+    <div id="dashboardSection" class="hidden">
+      <!-- Task Trigger Card -->
+      <div class="card">
+        <h2 class="card-title">Run Event Discovery</h2>
+        <p class="card-subtitle">
+          Describe the tech events, hackathons, or workshops you want. Mention target dates, cities, or delay times (e.g. "wait 15 minutes then deliver").
+        </p>
+
+        <div id="taskAlert" class="alert hidden"></div>
+
+        <form id="taskForm" onsubmit="handleTaskSubmit(event)">
+          <!-- Execution Mode Selector -->
+          <div class="form-group">
+            <label class="form-label">Execution Mode</label>
+            <div class="mode-selector">
+              <label class="mode-option">
+                <input type="radio" name="executionMode" value="immediate" checked onchange="toggleExecutionMode()" />
+                <span class="mode-label">⚡ Immediate Execution</span>
+              </label>
+              <label class="mode-option">
+                <input type="radio" name="executionMode" value="scheduled" onchange="toggleExecutionMode()" />
+                <span class="mode-label">📅 Multi-Day Scheduled Execution</span>
+              </label>
+            </div>
+
+            <!-- Option 1: Immediate Execution Helper Note -->
+            <div id="immediateHelper" class="helper-note">
+              Searches right now and sends the event summary email immediately.
+            </div>
+
+            <!-- Option 2: Multi-Day Scheduled Inputs (Dynamically revealed) -->
+            <div id="scheduledInputs" class="scheduled-panel hidden">
+              <div class="form-group" style="margin-bottom: 0.85rem;">
+                <label class="form-label" for="targetDay">Target End Day / Date Picker</label>
+                <input type="date" id="targetDay" class="form-control" />
+                <span class="input-hint">Select the final day/date until which the agent should run daily.</span>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="dailyRunMinutes">Daily Search Duration (T_run)</label>
+                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                  <input type="number" id="dailyRunMinutes" class="form-control" min="1" max="60" value="60" style="max-width: 110px;" />
+                  <span style="font-size: 0.85rem; color: #475569;">minutes/day</span>
+                </div>
+                <span class="static-notice">Max 60 mins/day based on daily Gemini API usage limits.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="taskPrompt">Event Search Prompt</label>
+            <textarea id="taskPrompt" class="form-control" placeholder="e.g. Find all AI/ML hackathons in Hyderabad happening tomorrow." required></textarea>
+          </div>
+
+          <div class="preset-chips">
+            <span class="preset-chip" onclick="fillPrompt('Find all AI/ML hackathons and coding competitions happening next weekend. Deliver the email digest.')">AI Hackathons Next Weekend</span>
+            <span class="preset-chip" onclick="fillPrompt('Find upcoming developer workshops and tech meetups in Hyderabad. Work for 15 minutes then deliver emails.')">Hyderabad Tech Meetups (15m Delay)</span>
+            <span class="preset-chip" onclick="fillPrompt('Find online Web3 and Cloud Computing hackathons happening this month on Devpost and Devfolio.')">Web3 & Cloud Hackathons</span>
+          </div>
+
+          <button type="submit" id="taskSubmitBtn" class="btn btn-primary">
+            Submit Discovery Task
+          </button>
+        </form>
+      </div>
+
+      <!-- Task History Card -->
+      <div class="card">
+        <div class="flex-between" style="margin-bottom: 1.25rem;">
+          <div>
+            <h2 class="card-title" style="margin-bottom: 0;">Task History & Dispatches</h2>
+            <p class="card-subtitle" style="margin-bottom: 0;">Stored in MongoDB with real-time status updates.</p>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="fetchTaskHistory()">
+            🔄 Refresh
+          </button>
+        </div>
+
+        <div id="taskListContainer">
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Loading history...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/static/js/calendar.js"></script>
+  <script src="/static/js/export.js"></script>
+  <script src="/static/js/filter.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
