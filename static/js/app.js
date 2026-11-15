@@ -389,6 +389,12 @@ function renderTasks(tasks) {
           </div>
         </div>
       `;
+    } else if (Array.isArray(t.results) && t.results.length === 0 && status === "COMPLETED") {
+      resultsHtml = `
+        <div class="event-results" style="padding: 0.75rem 1rem; color: var(--text-muted); font-size: 0.85rem;">
+          No events found for this query.
+        </div>
+      `;
     }
 
     html += `

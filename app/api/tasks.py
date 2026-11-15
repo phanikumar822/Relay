@@ -94,12 +94,13 @@ async def run_immediate_pipeline(task_id: str, prompt: str, user_email: str):
                     "first_seen_at": datetime.utcnow()
                 })
 
+        events_to_deliver = fresh_events if fresh_events else ranked
         email_dispatched = False
         email_error = None
-        if fresh_events:
+        if events_to_deliver:
             try:
                 username = user_email.split("@")[0]
-                await send_event_digest(user_email, fresh_events, username=username)
+                await send_event_digest(user_email, events_to_deliver, username=username)
                 email_dispatched = True
             except Exception as mail_err:
                 logger.warning("Task %s: Email dispatch skipped or timed out (%s). Events saved to UI.", task_id, mail_err)
@@ -112,7 +113,7 @@ async def run_immediate_pipeline(task_id: str, prompt: str, user_email: str):
                 "status": "COMPLETED",
                 "email_dispatched": email_dispatched,
                 "email_error": email_error,
-                "result_summary": fresh_events
+                "result_summary": ranked
             }}
         )
 
