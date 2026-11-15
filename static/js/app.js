@@ -296,9 +296,11 @@ function renderTasks(tasks) {
       ? `<span class="badge" style="background:#f8fafc; color:#334155; border:1px solid #cbd5e1; font-size:0.7rem;">📅 Scheduled till ${t.target_day || "end"} (${t.daily_run_minutes || 60}m/day)</span>`
       : `<span class="badge" style="background:#f8fafc; color:#334155; border:1px solid #cbd5e1; font-size:0.7rem;">⚡ Immediate</span>`;
 
-    const emailStatus = t.email_dispatched
-      ? `<span style="color: var(--success); font-weight: 600;">✉️ Email Dispatched</span>`
-      : `<span style="color: var(--text-muted);">✉️ Not sent</span>`;
+    let emailStatus = `<span style="color: var(--success); font-weight: 600;">✉️ Email Dispatched</span>`;
+    if (!t.email_dispatched) {
+      const errorMsg = t.email_error || "Cloud host blocks raw SMTP traffic (ports 587/465).";
+      emailStatus = `<span style="color: var(--text-muted); cursor: help;" title="${escapeHtml(errorMsg)}">✉️ Not sent (Cloud SMTP blocked) ⓘ</span>`;
+    }
 
     const dateStr = t.created_at ? new Date(t.created_at).toLocaleString() : "";
 

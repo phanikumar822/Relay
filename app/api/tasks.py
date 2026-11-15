@@ -95,6 +95,7 @@ async def run_immediate_pipeline(task_id: str, prompt: str, user_email: str):
                 })
 
         email_dispatched = False
+        email_error = None
         if fresh_events:
             try:
                 username = user_email.split("@")[0]
@@ -103,12 +104,14 @@ async def run_immediate_pipeline(task_id: str, prompt: str, user_email: str):
             except Exception as mail_err:
                 logger.warning("Task %s: Email dispatch skipped or timed out (%s). Events saved to UI.", task_id, mail_err)
                 email_dispatched = False
+                email_error = str(mail_err)
 
         await t_col.update_one(
             {"_id": task_id},
             {"$set": {
                 "status": "COMPLETED",
                 "email_dispatched": email_dispatched,
+                "email_error": email_error,
                 "result_summary": fresh_events
             }}
         )
@@ -224,6 +227,7 @@ async def run_scheduled_pipeline(
 
         # Final multi-day dispatch
         email_dispatched = False
+        email_error = None
         if all_fresh_events:
             try:
                 username = user_email.split("@")[0]
@@ -232,12 +236,14 @@ async def run_scheduled_pipeline(
             except Exception as mail_err:
                 logger.warning("Scheduled Task %s: Email dispatch skipped or timed out (%s). Events saved to UI.", task_id, mail_err)
                 email_dispatched = False
+                email_error = str(mail_err)
 
         await t_col.update_one(
             {"_id": task_id},
             {"$set": {
                 "status": "COMPLETED",
                 "email_dispatched": email_dispatched,
+                "email_error": email_error,
                 "result_summary": all_fresh_events
             }}
         )
@@ -318,6 +324,7 @@ async def get_history(current_user: MongoUser = Depends(get_current_user)):
         "daily_run_minutes": t.get("daily_run_minutes"),
         "status": t.get("status", "UNKNOWN"),
         "email_dispatched": t.get("email_dispatched", False),
+        "email_error": t.get("email_error"),
         "results": t.get("result_summary"),
         "created_at": t.get("created_at").isoformat() if t.get("created_at") else None
     } for t in tasks]

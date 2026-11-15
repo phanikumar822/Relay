@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     SMTP_PORT: int = 587
     SMTP_USER: str
     SMTP_PASSWORD: str
+    RESEND_API_KEY: str = ""
 
     model_config = SettingsConfigDict(
         env_file=".env",

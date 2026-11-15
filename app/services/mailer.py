@@ -40,6 +40,27 @@ async def send_event_digest(recipient_email: str, events: list, username: str = 
     </html>
     """
 
+    if getattr(settings, "RESEND_API_KEY", None) and settings.RESEND_API_KEY.strip():
+        import httpx
+        async with httpx.AsyncClient() as client:
+            res = await client.post(
+                "https://api.resend.com/emails",
+                headers={
+                    "Authorization": f"Bearer {settings.RESEND_API_KEY.strip()}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "from": "Relay <onboarding@resend.dev>",
+                    "to": [recipient_email],
+                    "subject": f"Welcome {len(events)} New Events Found",
+                    "html": html_content
+                },
+                timeout=12.0
+            )
+            if res.status_code >= 400:
+                raise RuntimeError(f"Resend HTTP error ({res.status_code}): {res.text}")
+            return
+
     message = EmailMessage()
     message["From"] = settings.SMTP_USER
     message["To"] = recipient_email
